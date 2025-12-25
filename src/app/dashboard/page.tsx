@@ -64,31 +64,30 @@ export default function DashboardPage() {
         <KPICards data={excelData} />
 
         {/* Row 1: Charts 1, 2, 3 */}
-        <div className="w-full flex flex-row gap-x-3">
-          <div className="flex-1 flex flex-row gap-x-3">
-            <div className="w-[calc(50%-6px)]">
-              {/* Chart 1: Projects by Investor */}
-              <ProjectsByInvestorChart data={excelData} />
+        <div className="w-full flex justify-between items-center gap-3">
+          <div className='w-full flex gap-x-3'>
+            <div className="flex-1 flex flex-row gap-x-3">
+              <div className='w-full'>
+                <ProjectsByInvestorChart data={excelData} />
+              </div>
+              <div className='w-full'>
+                <TotalValueByInvestorChart data={excelData} />
+              </div>
             </div>
-
-            <div className="w-[calc(50%-6px)]">
-              {/* Chart 2: Total Project Value by Investor */}
-              <TotalValueByInvestorChart data={excelData} />
+            <div className="basis-[50%]">
+              {/* Chart 3: Project Cost Chart */}
+              <ProjectCostChart data={excelData} />
             </div>
-          </div>
-          <div className="w-[calc(40%-6px)]">
-            {/* Chart 3: Project Cost Chart */}
-            <ProjectCostChart data={excelData} />
           </div>
         </div>
 
         {/* Row 2: Charts 4, 5, 6 */}
-        <div className="w-full flex flex-row gap-x-3">
-          <div className="w-[calc(73%-10px)]">
+        <div className="w-full flex justify-between items-center gap-3">
+          <div className="basis-[50%]">
             {/* Chart 4: Project Completion Rate */}
             <ProjectCompletionChart data={excelData} />
           </div>
-          <div className="w-[calc(27%-10px)]">
+          <div className="basis-[50%]">
             {/* Chart 5: Project Type Ratio */}
             <ProjectTypeChart data={excelData} />
           </div>
@@ -98,7 +97,7 @@ export default function DashboardPage() {
           </div> */}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
