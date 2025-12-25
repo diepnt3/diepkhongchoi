@@ -83,11 +83,11 @@ export default function DashboardPage() {
 
         {/* Row 2: Charts 4, 5, 6 */}
         <div className="w-full flex justify-between items-center gap-3">
-          <div className="basis-[50%]">
+          <div className="basis-[72%]">
             {/* Chart 4: Project Completion Rate */}
             <ProjectCompletionChart data={excelData} />
           </div>
-          <div className="basis-[50%]">
+          <div className="basis-[28%]">
             {/* Chart 5: Project Type Ratio */}
             <ProjectTypeChart data={excelData} />
           </div>
