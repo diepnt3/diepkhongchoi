@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useExcelStore } from '@/store/useExcelStore';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -12,14 +11,17 @@ import {
   LinearScale,
   BarElement,
   Title,
-} from 'chart.js';
-import ProjectCostChart from '@/components/ProjectCostChart';
-import ProjectsByInvestorChart from '@/components/ProjectsByInvestorChart';
-import TotalValueByInvestorChart from '@/components/TotalValueByInvestorChart';
-import ProjectCompletionChart from '@/components/ProjectCompletionChart';
-import ProjectTypeChart from '@/components/ProjectTypeChart';
-import PersonnelAllocationChart from '@/components/PersonnelAllocationChart';
-import KPICards from '@/components/KPICards';
+} from "chart.js";
+import ProjectCostChart from "@/components/ProjectCostChart";
+import ProjectsByInvestorChart from "@/components/ProjectsByInvestorChart";
+import TotalValueByInvestorChart from "@/components/TotalValueByInvestorChart";
+import ProjectCompletionChart from "@/components/ProjectCompletionChart";
+import ProjectTypeChart from "@/components/ProjectTypeChart";
+import PersonnelAllocationChart from "@/components/PersonnelAllocationChart";
+import KPICards from "@/components/KPICards";
+import { useProjectStore } from "@/store/useProjectStore";
+import { useShallow } from "zustand/react/shallow";
+import { projectsToExcelData } from "@/utils/helpers";
 
 ChartJS.register(
   ArcElement,
@@ -32,17 +34,26 @@ ChartJS.register(
 );
 
 export default function DashboardPage() {
-  const { excelData } = useExcelStore();
+  const { allProjects, getAllProjects } = useProjectStore(
+    useShallow((state) => ({
+      allProjects: state.allProjects,
+      getAllProjects: state.getAllProjects,
+    }))
+  );
   const router = useRouter();
 
   useEffect(() => {
-    if (excelData.length === 0) {
-      // Redirect to projects page if no data
-      router.push('/projects');
-    }
-  }, [excelData.length, router]);
+    getAllProjects();
+  }, [getAllProjects]);
 
-  if (excelData.length === 0) {
+  useEffect(() => {
+    if (allProjects.length === 0) {
+      // Redirect to projects page if no data
+      router.push("/projects");
+    }
+  }, [allProjects.length, router]);
+
+  if (allProjects.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -57,6 +68,9 @@ export default function DashboardPage() {
     );
   }
 
+  // Convert IProject[] to ExcelData[] for components
+  const excelData = projectsToExcelData(allProjects);
+
   return (
     <div className="w-full h-full overflow-auto bg-gray-50">
       <div className="w-full max-w-[1400px] mx-auto p-4 flex flex-col gap-y-3">
@@ -65,12 +79,12 @@ export default function DashboardPage() {
 
         {/* Row 1: Charts 1, 2, 3 */}
         <div className="w-full flex justify-between items-center gap-3">
-          <div className='w-full flex gap-x-3'>
+          <div className="w-full flex gap-x-3">
             <div className="flex-1 flex flex-row gap-x-3">
-              <div className='w-full'>
+              <div className="w-full">
                 <ProjectsByInvestorChart data={excelData} />
               </div>
-              <div className='w-full'>
+              <div className="w-full">
                 <TotalValueByInvestorChart data={excelData} />
               </div>
             </div>
@@ -97,7 +111,6 @@ export default function DashboardPage() {
           </div> */}
         </div>
       </div>
-    </div >
+    </div>
   );
 }
-

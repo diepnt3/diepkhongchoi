@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useExcelStore } from '@/store/useExcelStore';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useProjectStore } from "@/store/useProjectStore";
+import { useShallow } from "zustand/react/shallow";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,11 +12,14 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import { useMemo } from 'react';
-import { getAllProjectCompletionRate } from '@/utils/helpers';
-import annotationPlugin from 'chartjs-plugin-annotation';
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import { useMemo } from "react";
+import {
+  getAllProjectCompletionRate,
+  projectsToExcelData,
+} from "@/utils/helpers";
+import annotationPlugin from "chartjs-plugin-annotation";
 
 ChartJS.register(
   CategoryScale,
@@ -28,25 +32,51 @@ ChartJS.register(
 );
 
 export default function ProjectCompletionDetailPage() {
-  const { excelData } = useExcelStore();
+  const { allProjects, getAllProjects } = useProjectStore(
+    useShallow((state) => ({
+      allProjects: state.allProjects,
+      getAllProjects: state.getAllProjects,
+    }))
+  );
   const router = useRouter();
 
   useEffect(() => {
-    if (excelData.length === 0) {
-      router.push('/projects');
+    getAllProjects();
+  }, [getAllProjects]);
+
+  useEffect(() => {
+    if (allProjects.length === 0) {
+      router.push("/projects");
     }
-  }, [excelData.length, router]);
+  }, [allProjects.length, router]);
+
+  // Convert IProject[] to ExcelData[] for components
+  const excelData = projectsToExcelData(allProjects);
 
   const chartData = useMemo(() => {
     if (excelData.length === 0) return null;
     return getAllProjectCompletionRate(excelData);
   }, [excelData]);
 
-  const { ganttData, minDate, maxDate, barColors, borderColors, currentDatePosition } = useMemo(() => {
+  const {
+    ganttData,
+    minDate,
+    maxDate,
+    barColors,
+    borderColors,
+    currentDatePosition,
+  } = useMemo(() => {
     if (!chartData || chartData.startDates.length === 0) {
-      return { ganttData: [], minDate: Date.now(), maxDate: Date.now(), barColors: [], borderColors: [], currentDatePosition: 0 };
+      return {
+        ganttData: [],
+        minDate: Date.now(),
+        maxDate: Date.now(),
+        barColors: [],
+        borderColors: [],
+        currentDatePosition: 0,
+      };
     }
-    
+
     const allDates = [...chartData.startDates, ...chartData.endDates];
     const min = Math.min(...allDates);
     const max = Math.max(...allDates);
@@ -54,7 +84,7 @@ export default function ProjectCompletionDetailPage() {
     const minDate = min - padding;
     const maxDate = max + padding;
     const currentDate = Date.now();
-    
+
     const ganttData = chartData.startDates.map((start, index) => {
       const end = chartData.endDates[index];
       const duration = end - start;
@@ -66,20 +96,27 @@ export default function ProjectCompletionDetailPage() {
         end,
       };
     });
-    
+
     // Calculate colors based on whether project is overdue
-    const barColors = ganttData.map(d => {
+    const barColors = ganttData.map((d) => {
       return d.end < currentDate ? "#ef4444" : "#3B82F6"; // Orange if overdue, blue otherwise
     });
-    
-    const borderColors = ganttData.map(d => {
+
+    const borderColors = ganttData.map((d) => {
       return d.end < currentDate ? "#ef4444" : "#2563EB"; // Darker orange if overdue, darker blue otherwise
     });
-    
+
     // Calculate position of current date line
     const currentDatePosition = currentDate - minDate;
-    
-    return { ganttData, minDate, maxDate, barColors, borderColors, currentDatePosition };
+
+    return {
+      ganttData,
+      minDate,
+      maxDate,
+      barColors,
+      borderColors,
+      currentDatePosition,
+    };
   }, [chartData]);
 
   const formatDate = (timestamp: number): string => {
@@ -121,21 +158,29 @@ export default function ProjectCompletionDetailPage() {
             </div>
           </div>
 
-          <div className="relative w-full" style={{ minHeight: `${Math.max(600, (chartData?.labels.length || 0) * 30)}px` }}>
+          <div
+            className="relative w-full"
+            style={{
+              minHeight: `${Math.max(
+                600,
+                (chartData?.labels.length || 0) * 30
+              )}px`,
+            }}
+          >
             <Bar
               data={{
                 labels: chartData?.labels || [],
                 datasets: [
                   {
                     label: "Offset",
-                    data: ganttData.map(d => d.offset),
+                    data: ganttData.map((d) => d.offset),
                     backgroundColor: "transparent",
                     borderWidth: 0,
                     barThickness: 18,
                   },
                   {
                     label: "Thời gian dự án",
-                    data: ganttData.map(d => d.duration),
+                    data: ganttData.map((d) => d.duration),
                     backgroundColor: barColors,
                     borderColor: borderColors,
                     borderWidth: 1,
@@ -144,7 +189,7 @@ export default function ProjectCompletionDetailPage() {
                 ],
               }}
               options={{
-                indexAxis: 'y',
+                indexAxis: "y",
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -164,28 +209,28 @@ export default function ProjectCompletionDetailPage() {
                           const end = formatDate(data.end);
                           return `Từ ${start} đến ${end}`;
                         }
-                        return '';
+                        return "";
                       },
                     },
                   },
                   annotation: {
                     annotations: {
                       currentDateLine: {
-                        type: 'line',
+                        type: "line",
                         xMin: currentDatePosition,
                         xMax: currentDatePosition,
-                        borderColor: '#EF4444',
+                        borderColor: "#EF4444",
                         borderWidth: 2,
                         borderDash: [5, 5],
                         label: {
                           display: true,
-                          content: '',
-                          position: 'end',
-                          backgroundColor: '#EF4444',
-                          color: '#FFFFFF',
+                          content: "",
+                          position: "end",
+                          backgroundColor: "#EF4444",
+                          color: "#FFFFFF",
                           font: {
                             size: 11,
-                            weight: 'bold',
+                            weight: "bold",
                           },
                           padding: {
                             x: 6,

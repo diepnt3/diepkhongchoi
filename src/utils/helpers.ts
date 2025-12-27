@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { ExcelData } from "./interfaces";
+import { ExcelData, IProject } from "./interfaces";
 
 // Helper function to parse Vietnamese number format (e.g., "147.000.000.000" -> 147000000000)
 export const parseVietnameseNumber = (value: unknown): number => {
@@ -81,7 +81,7 @@ export const getProjectsByInvestor = (
   const investorCounts: { [key: string]: number } = {};
 
   data.forEach((row) => {
-    const investor = row["Chủ đầu tư"];
+    const investor = row.investor;
     if (investor) {
       const investorStr = String(investor).trim();
       if (investorStr) {
@@ -103,8 +103,8 @@ export const getTotalValueByInvestor = (
   const investorValues: { [key: string]: number } = {};
 
   data.forEach((row) => {
-    const investor = row["Chủ đầu tư"];
-    const contractValue = parseVietnameseNumber(row["Giá trị hợp đồng (VND)"]);
+    const investor = row.investor;
+    const contractValue = parseVietnameseNumber(row.contractValue);
 
     if (investor && contractValue > 0) {
       const investorStr = String(investor).trim();
@@ -136,14 +136,14 @@ export const getProjectCosts = (
   }> = [];
 
   data.forEach((row) => {
-    const projectCode = row["Tên rút gọn"];
-    const budgetVND = parseVietnameseNumber(row["Giá trị hợp đồng (VND)"]);
-    const actualVND = parseVietnameseNumber(row["Giá trị đã đề nghị TT, TƯ hợp đồng"]);
+    const projectCode = row.shortName;
+    const budgetVND = parseVietnameseNumber(row.contractValue);
+    const actualVND = parseVietnameseNumber(row.executedValue);
 
     // Convert to billions (tỷ)
     const budget = budgetVND / 1000000000;
     const actual = actualVND / 1000000000;
-console.log("budget", budget, "actual", actual);
+    console.log("budget", budget, "actual", actual);
     if (projectCode && (budget > 0 || actual > 0)) {
       projectData.push({
         projectCode: String(projectCode).trim(),
@@ -180,9 +180,9 @@ export const getAllProjectCosts = (
   }> = [];
 
   data.forEach((row) => {
-    const projectCode = row["Tên rút gọn"];
-    const budgetVND = parseVietnameseNumber(row["Giá trị hợp đồng (VND)"]);
-    const actualVND = parseVietnameseNumber(row["Giá trị đã đề nghị TT, TƯ hợp đồng"]);
+    const projectCode = row.shortName;
+    const budgetVND = parseVietnameseNumber(row.contractValue);
+    const actualVND = parseVietnameseNumber(row.executedValue);
 
     // Convert to billions (tỷ)
     const budget = budgetVND / 1000000000;
@@ -245,10 +245,10 @@ export const getProjectCompletionRate = (
   }> = [];
 
   data.forEach((row) => {
-    const projectCode = row["Tên rút gọn"];
-    const startDateStr = row["Ngày bắt đầu"];
-    const endDateStr = row["Ngày kết thúc dự kiến"];
-    const completionRate = parseVietnameseNumber(row["% hoàn thành"]);
+    const projectCode = row.shortName;
+    const startDateStr = row.startDate;
+    const endDateStr = row.expectedEndDate;
+    const completionRate = parseVietnameseNumber(row.completionPercentage);
 
     if (projectCode && startDateStr) {
       const startDate = parseVietnameseDate(startDateStr);
@@ -265,9 +265,9 @@ export const getProjectCompletionRate = (
           endDate = endDateExpected;
         } else {
           endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-        }        
-        console.log("endDatestr",endDateExpected);
-        console.log("endDate",endDate);
+        }
+        console.log("endDatestr", endDateExpected);
+        console.log("endDate", endDate);
         projectData.push({
           projectCode: String(projectCode).trim(),
           startDate,
@@ -306,10 +306,10 @@ export const getAllProjectCompletionRate = (
   }> = [];
 
   data.forEach((row) => {
-    const projectCode = row["Tên rút gọn"];
-    const startDateStr = row["Ngày bắt đầu"];
-    const endDateStr = row["Ngày kết thúc dự kiến"];
-    const completionRate = parseVietnameseNumber(row["% hoàn thành"]);
+    const projectCode = row.shortName;
+    const startDateStr = row.startDate;
+    const endDateStr = row.expectedEndDate;
+    const completionRate = parseVietnameseNumber(row.completionPercentage);
 
     if (projectCode && startDateStr) {
       const startDate = parseVietnameseDate(startDateStr);
@@ -358,7 +358,7 @@ export const getProjectTypeRatio = (
   const typeCounts: { [key: string]: number } = {};
 
   data.forEach((row) => {
-    const projectType = row["Loại dự án"];
+    const projectType = row.projectType;
     if (projectType) {
       const typeStr = String(projectType).trim();
       if (typeStr) {
@@ -386,8 +386,8 @@ export const getPersonnelAllocation = (
   }> = [];
 
   data.forEach((row) => {
-    const projectCode = row["Mã dự án"];
-    const projectManager = row["Giám đốc dự án"];
+    const projectCode = row.projectCode;
+    const projectManager = row.projectDirector;
 
     if (projectCode && projectManager) {
       const projectCodeStr = String(projectCode).trim();
@@ -437,17 +437,17 @@ export const getKPIStats = (data: ExcelData[]): KPIStats => {
 
   data.forEach((row) => {
     // Tổng dự án
-    const projectCode = row["Mã dự án"];
+    const projectCode = row.projectCode;
     if (projectCode) {
       uniqueProjects.add(String(projectCode).trim());
     }
 
     // Dự toán (Tổng giá trị hợp đồng)
-    const contractValue = parseVietnameseNumber(row["Giá trị hợp đồng (VND)"]);
+    const contractValue = parseVietnameseNumber(row.contractValue);
     totalContractValue += contractValue;
 
     // Tổng số nhân sự (tổng của từng dự án, có thể trùng lặp)
-    const projectManager = row["Giám đốc dự án"];
+    const projectManager = row.projectDirector;
     if (projectManager) {
       const managerStr = String(projectManager).trim();
       if (managerStr) {
@@ -460,7 +460,7 @@ export const getKPIStats = (data: ExcelData[]): KPIStats => {
     }
 
     // Tỉ lệ đúng tiến độ (% hoàn thành trung bình)
-    const completionRate = parseVietnameseNumber(row["% hoàn thành"]);
+    const completionRate = parseVietnameseNumber(row.completionPercentage);
     if (completionRate >= 0) {
       totalCompletionRate += completionRate;
       projectsWithCompletionRate++;
@@ -484,3 +484,19 @@ export const getKPIStats = (data: ExcelData[]): KPIStats => {
     estimatedCost: totalEstimatedBudget / 1000000000,
   };
 };
+
+/**
+ * Convert IProject to ExcelData format
+ */
+export function projectToExcelData(project: IProject): ExcelData {
+  return {
+    ...project,
+  } as ExcelData;
+}
+
+/**
+ * Convert IProject[] to ExcelData[]
+ */
+export function projectsToExcelData(projects: IProject[]): ExcelData[] {
+  return projects.map(projectToExcelData);
+}

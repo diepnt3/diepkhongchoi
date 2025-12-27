@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useExcelStore } from '@/store/useExcelStore';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useProjectStore } from "@/store/useProjectStore";
+import { useShallow } from "zustand/react/shallow";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,10 +12,10 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import { useMemo } from 'react';
-import { getAllProjectCosts } from '@/utils/helpers';
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import { useMemo } from "react";
+import { getAllProjectCosts, projectsToExcelData } from "@/utils/helpers";
 
 ChartJS.register(
   CategoryScale,
@@ -26,14 +27,26 @@ ChartJS.register(
 );
 
 export default function ProjectCostDetailPage() {
-  const { excelData } = useExcelStore();
+  const { allProjects, getAllProjects } = useProjectStore(
+    useShallow((state) => ({
+      allProjects: state.allProjects,
+      getAllProjects: state.getAllProjects,
+    }))
+  );
   const router = useRouter();
 
   useEffect(() => {
-    if (excelData.length === 0) {
-      router.push('/projects');
+    getAllProjects();
+  }, [getAllProjects]);
+
+  useEffect(() => {
+    if (allProjects.length === 0) {
+      router.push("/projects");
     }
-  }, [excelData.length, router]);
+  }, [allProjects.length, router]);
+
+  // Convert IProject[] to ExcelData[] for components
+  const excelData = projectsToExcelData(allProjects);
 
   const chartData = useMemo(() => {
     if (excelData.length === 0) return null;
@@ -72,7 +85,7 @@ export default function ProjectCostDetailPage() {
             </div>
           </div>
 
-          <div className="relative w-full" style={{ minHeight: '600px' }}>
+          <div className="relative w-full" style={{ minHeight: "600px" }}>
             <Bar
               data={{
                 labels: chartData?.labels || [],
@@ -112,7 +125,9 @@ export default function ProjectCostDetailPage() {
                     callbacks: {
                       label: function (context) {
                         const value = context.parsed.y || 0;
-                        const formatted = parseFloat(value.toFixed(2)).toString();
+                        const formatted = parseFloat(
+                          value.toFixed(2)
+                        ).toString();
                         return `${context.dataset.label}: ${formatted}B VND`;
                       },
                     },
@@ -129,7 +144,9 @@ export default function ProjectCostDetailPage() {
                     ticks: {
                       callback: function (value) {
                         const numValue = Number(value);
-                        const formatted = parseFloat(numValue.toFixed(2)).toString();
+                        const formatted = parseFloat(
+                          numValue.toFixed(2)
+                        ).toString();
                         return formatted + "B";
                       },
                     },
@@ -143,4 +160,3 @@ export default function ProjectCostDetailPage() {
     </div>
   );
 }
-
