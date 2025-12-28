@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -34,24 +33,17 @@ ChartJS.register(
 );
 
 export default function DashboardPage() {
-  const { allProjects, getAllProjects } = useProjectStore(
+  const { allProjects, getAllProjects, isAllProjectsLoading } = useProjectStore(
     useShallow((state) => ({
       allProjects: state.allProjects,
       getAllProjects: state.getAllProjects,
+      isAllProjectsLoading: state.isAllProjectsLoading,
     }))
   );
-  const router = useRouter();
 
   useEffect(() => {
     getAllProjects();
   }, [getAllProjects]);
-
-  useEffect(() => {
-    if (allProjects.length === 0) {
-      // Redirect to projects page if no data
-      router.push("/projects");
-    }
-  }, [allProjects.length, router]);
 
   if (allProjects.length === 0) {
     return (
@@ -68,12 +60,22 @@ export default function DashboardPage() {
     );
   }
 
+  if (isAllProjectsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg text-gray-600 mb-4">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Convert IProject[] to ExcelData[] for components
   const excelData = projectsToExcelData(allProjects);
 
   return (
     <div className="w-full h-full overflow-auto bg-gray-50">
-      <div className="w-full max-w-[1400px] mx-auto p-4 flex flex-col gap-y-3">
+      <div className="w-full mx-auto p-4 flex flex-col gap-y-3">
         {/* KPI Cards */}
         <KPICards data={excelData} />
 

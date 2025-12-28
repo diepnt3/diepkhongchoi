@@ -138,7 +138,7 @@ export const getProjectCosts = (
   data.forEach((row) => {
     const projectCode = row.shortName;
     const budgetVND = parseVietnameseNumber(row.contractValue);
-    const actualVND = parseVietnameseNumber(row.executedValue);
+    const actualVND = parseVietnameseNumber(row.proposedPaymentValue);
 
     // Convert to billions (tỷ)
     const budget = budgetVND / 1000000000;
@@ -182,7 +182,7 @@ export const getAllProjectCosts = (
   data.forEach((row) => {
     const projectCode = row.shortName;
     const budgetVND = parseVietnameseNumber(row.contractValue);
-    const actualVND = parseVietnameseNumber(row.executedValue);
+    const actualVND = parseVietnameseNumber(row.proposedPaymentValue);
 
     // Convert to billions (tỷ)
     const budget = budgetVND / 1000000000;
@@ -222,6 +222,23 @@ export const formatBillions = (value: number): string => {
 export const parseVietnameseDate = (value: unknown): Date | null => {
   if (value === null || value === undefined || value === "") return null;
 
+  // Nếu là string format YYYY-MM-DD (ISO format)
+  if (typeof value === "string") {
+    // Kiểm tra format YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const date = new Date(value + "T00:00:00.000Z"); // Thêm time để tránh timezone issues
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+    // Fallback: thử parse trực tiếp
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+  }
+
+  // Nếu là number (Excel date serial number) - giữ lại cho backward compatibility
   if (typeof value === "number") {
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
     return new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 import { ExcelData } from "@/utils/interfaces";
 import { useMemo } from "react";
 import { getProjectCompletionRate } from "@/utils/helpers";
 import { Bar } from "react-chartjs-2";
 import { useRouter } from "next/navigation";
-import { Chart as ChartJS } from 'chart.js';
-import annotationPlugin from 'chartjs-plugin-annotation';
+import { Chart as ChartJS } from "chart.js";
+import annotationPlugin from "chartjs-plugin-annotation";
 
 // Register the annotation plugin
 ChartJS.register(annotationPlugin);
@@ -23,11 +23,25 @@ export default function ProjectCompletionChart({
   }, [data]);
 
   // Calculate data for Gantt chart: duration and offset from min date
-  const { ganttData, minDate, maxDate, barColors, borderColors, currentDatePosition } = useMemo(() => {
+  const {
+    ganttData,
+    minDate,
+    maxDate,
+    barColors,
+    borderColors,
+    currentDatePosition,
+  } = useMemo(() => {
     if (!chartData || chartData.startDates.length === 0) {
-      return { ganttData: [], minDate: Date.now(), maxDate: Date.now(), barColors: [], borderColors: [], currentDatePosition: 0 };
+      return {
+        ganttData: [],
+        minDate: Date.now(),
+        maxDate: Date.now(),
+        barColors: [],
+        borderColors: [],
+        currentDatePosition: 0,
+      };
     }
-    
+
     const allDates = [...chartData.startDates, ...chartData.endDates];
     const min = Math.min(...allDates);
     const max = Math.max(...allDates);
@@ -35,7 +49,7 @@ export default function ProjectCompletionChart({
     const minDate = min - padding;
     const maxDate = max + padding;
     const currentDate = Date.now();
-    
+
     const ganttData = chartData.startDates.map((start, index) => {
       const end = chartData.endDates[index];
       const duration = end - start; // Duration in milliseconds
@@ -47,20 +61,27 @@ export default function ProjectCompletionChart({
         end,
       };
     });
-    
+
     // Calculate colors based on whether project is overdue
-    const barColors = ganttData.map(d => {
+    const barColors = ganttData.map((d) => {
       return d.end < currentDate ? "#ef4444" : "#1e40af"; // Orange if overdue, blue otherwise
     });
-    
-    const borderColors = ganttData.map(d => {
+
+    const borderColors = ganttData.map((d) => {
       return d.end < currentDate ? "#ef4444" : "#1e40af"; // Darker orange if overdue, darker blue otherwise
     });
-    
+
     // Calculate position of current date line
     const currentDatePosition = currentDate - minDate;
-    
-    return { ganttData, minDate, maxDate, barColors, borderColors, currentDatePosition };
+
+    return {
+      ganttData,
+      minDate,
+      maxDate,
+      barColors,
+      borderColors,
+      currentDatePosition,
+    };
   }, [chartData]);
 
   // Format date for display
@@ -73,32 +94,37 @@ export default function ProjectCompletionChart({
   };
 
   const handleChartClick = () => {
-    router.push('/project-completion-detail');
+    router.push("/project-completion-detail");
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-5 cursor-pointer hover:shadow-xl transition-shadow duration-200" onClick={handleChartClick}>
+    <div
+      className="bg-white rounded-lg shadow-lg p-5 cursor-pointer hover:shadow-xl transition-shadow duration-200"
+      onClick={handleChartClick}
+    >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold text-gray-800">
           Tỉ lệ hoàn thành dự án
         </h3>
-        <span className="text-sm font-semibold text-blue-600 hover:text-blue-800">Xem chi tiết →</span>
+        <span className="text-sm font-semibold text-blue-600 hover:text-blue-800">
+          Xem chi tiết →
+        </span>
       </div>
-      <div className="relative w-full" style={{ height: '360px' }}>
+      <div className="relative w-full" style={{ height: "360px" }}>
         <Bar
           data={{
             labels: chartData?.labels || [],
             datasets: [
               {
                 label: "Offset",
-                data: ganttData.map(d => d.offset),
+                data: ganttData.map((d) => d.offset),
                 backgroundColor: "transparent",
                 borderWidth: 0,
                 barThickness: 18,
               },
               {
                 label: "Thời gian dự án",
-                data: ganttData.map(d => d.duration),
+                data: ganttData.map((d) => d.duration),
                 backgroundColor: barColors,
                 borderColor: borderColors,
                 borderWidth: 1,
@@ -107,7 +133,7 @@ export default function ProjectCompletionChart({
             ],
           }}
           options={{
-            indexAxis: 'y', // Horizontal bar chart
+            indexAxis: "y", // Horizontal bar chart
             responsive: true,
             maintainAspectRatio: false,
             onClick: handleChartClick,
@@ -128,28 +154,28 @@ export default function ProjectCompletionChart({
                       const end = formatDate(data.end);
                       return `Từ ${start} đến ${end}`;
                     }
-                    return '';
+                    return "";
                   },
                 },
               },
               annotation: {
                 annotations: {
                   currentDateLine: {
-                    type: 'line',
+                    type: "line",
                     xMin: currentDatePosition,
                     xMax: currentDatePosition,
-                    borderColor: '#EF4444',
+                    borderColor: "#EF4444",
                     borderWidth: 2,
                     borderDash: [5, 5],
                     label: {
                       display: true,
-                      content: '',
-                      position: 'end',
-                      backgroundColor: '#EF4444',
-                      color: '#FFFFFF',
+                      content: "",
+                      position: "end",
+                      backgroundColor: "#EF4444",
+                      color: "#FFFFFF",
                       font: {
                         size: 11,
-                        weight: 'bold',
+                        weight: "bold",
                       },
                       padding: {
                         x: 6,

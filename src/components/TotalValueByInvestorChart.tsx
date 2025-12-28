@@ -43,7 +43,7 @@ export default function TotalValueByInvestorChart({
       <h3 className="text-xl font-bold mb-4 text-gray-800">
         Tổng giá trị dự án
       </h3>
-      <div className="flex flex-row gap-2" style={{ height: '280px' }}>
+      <div className="flex flex-row gap-2" style={{ height: "280px" }}>
         {/* Chart - 60% */}
         <div className="relative w-[60%]">
           <Doughnut
@@ -62,7 +62,7 @@ export default function TotalValueByInvestorChart({
             options={{
               responsive: true,
               maintainAspectRatio: false,
-              cutout: '75%',
+              cutout: "75%",
               plugins: {
                 legend: {
                   display: false,
@@ -72,7 +72,8 @@ export default function TotalValueByInvestorChart({
                     label: function (context) {
                       const label = context.label || "";
                       const value = context.parsed || 0;
-                      const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
+                      const percentage =
+                        total > 0 ? ((value / total) * 100).toFixed(1) : "0";
                       // Format value in billions
                       const valueInBillions = formatBillions(value);
                       return `${label}: ${valueInBillions}B (${percentage}%)`;
@@ -83,9 +84,7 @@ export default function TotalValueByInvestorChart({
             }}
           />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-base font-bold text-gray-700">
-              Tổng giá trị
-            </p>
+            <p className="text-base font-bold text-gray-700">Tổng giá trị</p>
             <p className="text-2xl font-bold text-black">
               {total > 0 ? formatBillions(total) + "B" : "0"}
             </p>
@@ -99,7 +98,10 @@ export default function TotalValueByInvestorChart({
               const value = chart2Data.values[index];
               const valueInBillions = formatBillions(value);
               return (
-                <div key={index} className="flex items-center gap-2 bg-gray-100 p-1 rounded-md w-fit">
+                <div
+                  key={index}
+                  className="flex items-center gap-2 bg-gray-100 p-1 rounded-md w-fit"
+                >
                   <div
                     className="w-4 h-4 rounded shrink-0"
                     style={{ backgroundColor: colors[index % colors.length] }}
@@ -118,4 +120,3 @@ export default function TotalValueByInvestorChart({
     </div>
   );
 }
-

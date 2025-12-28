@@ -1,5 +1,5 @@
 import { ExcelData } from "./interfaces";
-import { Project } from "./interfaces";
+import { IProject } from "./interfaces";
 
 /**
  * Parse date từ nhiều format khác nhau
@@ -70,28 +70,28 @@ function parseNumber(value: unknown): number | undefined {
  */
 export function mapExcelDataToProject(
   excelRow: ExcelData,
-  headerMapping?: Record<string, keyof Project>
-): Project {
+  headerMapping?: Record<string, keyof IProject>
+): IProject {
   // Default mapping - có thể tùy chỉnh
-  const defaultMapping: Record<string, keyof Project> = {
+  const defaultMapping: Record<string, keyof IProject> = {
     "Mã dự án": "projectCode",
     "Tên dự án": "projectName",
-    "Tên ngắn": "shortName",
+    "Tên rút gọn": "shortName",
     "Loại dự án": "projectType",
     "Chủ đầu tư": "investor",
     Khối: "block",
     "Giám đốc dự án": "projectDirector",
-    "Phạm vi đấu thầu": "biddingScope",
+    "Phạm vi thầu": "biddingScope",
     "Trạng thái khởi tạo": "initStatus",
-    "Trạng thái tiến độ": "progressStatus",
+    "Trạng thái trễ tiến độ": "progressStatus",
     "Ngày bắt đầu": "startDate",
     "Ngày kết thúc dự kiến": "expectedEndDate",
-    "Số ngày": "durationDays",
-    "Số tháng": "durationMonths",
-    "Giá trị hợp đồng": "contractValue",
-    "Giá trị thực hiện": "executedValue",
-    "Giá trị nghiệm thu": "acceptedValue",
-    "Giá trị đề nghị thanh toán": "proposedPaymentValue",
+    "Duration time (day)": "durationDays",
+    "Duration time (month)": "durationMonths",
+    "Giá trị hợp đồng (VND)": "contractValue",
+    "Giá trị đã thực hiện (VND)": "executedValue",
+    "Giá trị đã nghiệm thu": "acceptedValue",
+    "Giá trị đã đề nghị TT, TƯ hợp đồng": "proposedPaymentValue",
     "Giá trị còn lại": "remainingValue",
     "% hoàn thành": "completionPercentage",
     // English variations
@@ -132,7 +132,7 @@ export function mapExcelDataToProject(
     return foundKey ? excelRow[foundKey] : undefined;
   };
 
-  const project: Project = {
+  const project: IProject = {
     projectCode: "",
     projectName: "",
   };
@@ -191,8 +191,8 @@ export function mapExcelDataToProject(
  */
 export function mapExcelDataToProjects(
   excelData: ExcelData[],
-  headerMapping?: Record<string, keyof Project>
-): Project[] {
+  headerMapping?: Record<string, keyof IProject>
+): IProject[] {
   return excelData
     .map((row) => {
       try {
@@ -202,5 +202,5 @@ export function mapExcelDataToProjects(
         return null;
       }
     })
-    .filter((project): project is Project => project !== null);
+    .filter((project): project is IProject => project !== null);
 }

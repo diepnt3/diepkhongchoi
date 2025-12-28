@@ -97,8 +97,6 @@ export default function ProjectsPage() {
 
   // Xử lý khi upload Excel xong
   const handleDataLoad = async (data: ExcelData[], newHeaders: string[]) => {
-    console.log("data", data);
-    console.log("newHeaders", newHeaders);
     if (!accessToken) {
       setError("Vui lòng đăng nhập để tiếp tục");
       return;
